@@ -1,0 +1,20 @@
+ceo:
+  active: true           # true = create profile (if needed) and start its gateway
+  clone-from: default    # clone config/skills from this profile; false = blank profile
+  env:
+    API_SERVER_PORT: 8643          # unique port for this agent's API server
+    API_SERVER_KEY:  sk-preflow    # bearer token (min 8 chars)
+
+coder:
+  active: true
+  clone-from: false      # start completely fresh with bundled skills
+  env:
+    API_SERVER_PORT: 8644
+    API_SERVER_KEY:  sk-coder
+
+tester:
+  active: true
+  clone-from: coder      # inherits coder's config — created after coder automatically
+  env:
+    API_SERVER_PORT: 8645
+    API_SERVER_KEY:  sk-tester

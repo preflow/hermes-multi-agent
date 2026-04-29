@@ -1,0 +1,69 @@
+x-default-service: &default-service
+  image: nousresearch/hermes-agent:latest   # https://hub.docker.com/r/nousresearch/hermes-agent/tags
+  restart: unless-stopped
+  networks:
+    - hermes-net
+  deploy:
+    resources:
+      limits:
+        memory: 4G
+        cpus: "2.0"
+
+x-agent-env: &agent-env
+  # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+  # OPENAI_API_KEY: ${OPENAI_API_KEY}
+  DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+  # TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+  # TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
+  # LINEAR_API_KEY: ${LINEAR_API_KEY}
+  API_SERVER_ENABLED: true              # https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server#configuration
+  API_SERVER_HOST: 0.0.0.0
+  API_SERVER_PORT: 8642
+  API_SERVER_KEY: sk-preflow
+
+x-agent-volumes: &agent-volumes
+  # - /var/run/docker.sock:/var/run/docker.sock   # WARNING: install Docker and Docker Compose inside container to use
+  - /etc/timezone:/etc/timezone:ro
+  - /etc/localtime:/etc/localtime:ro
+  - ./_data/hermes:/opt/data
+  - ./etc/agents.yml:/agents.yml
+  - ./etc/run_agents.sh:/run_agents.sh
+
+services:
+  hermes:
+    <<: *default-service
+    container_name: hermes
+    entrypoint: /run_agents.sh
+    command: gateway run
+    volumes: *agent-volumes
+    environment:
+      <<: *agent-env
+    privileged: true
+
+  # dashboard:
+  #   <<: *default-service
+  #   container_name: dashboard
+  #   command: dashboard --host 0.0.0.0 --insecure
+  #   # ports:
+  #   #   - "127.0.0.1:9119:9119"
+  #   volumes: *agent-volumes
+  #   environment:
+  #     - GATEWAY_HEALTH_URL=http://hermes:8642
+  #   depends_on:
+  #     - hermes
+
+  open-webui:   # https://hermes-agent.nousresearch.com/docs/user-guide/messaging/open-webui#docker-compose-setup
+    <<: *default-service
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./_data/open-webui:/app/backend/data
+    environment:
+      - OPENAI_API_BASE_URL=http://hermes:8642/v1
+      - OPENAI_API_KEY=sk-preflow                   # matching "API_SERVER_KEY"
+
+networks:
+  hermes-net:
+    driver: bridge
