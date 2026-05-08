@@ -1,5 +1,5 @@
 x-default-service: &default-service
-  image: nousresearch/hermes-agent:latest   # https://hub.docker.com/r/nousresearch/hermes-agent/tags
+  image: nousresearch/hermes-agent:v2026.4.30   # https://hub.docker.com/r/nousresearch/hermes-agent/tags
   restart: unless-stopped
   networks:
     - hermes-net
@@ -10,11 +10,7 @@ x-default-service: &default-service
         cpus: "2.0"
 
 x-agent-env: &agent-env
-  # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-  # OPENAI_API_KEY: ${OPENAI_API_KEY}
-  DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
-  # TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-  # TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
+  # DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
   # LINEAR_API_KEY: ${LINEAR_API_KEY}
   API_SERVER_ENABLED: true              # https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server#configuration
   API_SERVER_HOST: 0.0.0.0
@@ -40,17 +36,17 @@ services:
       <<: *agent-env
     privileged: true
 
-  # dashboard:
-  #   <<: *default-service
-  #   container_name: dashboard
-  #   command: dashboard --host 0.0.0.0 --insecure
-  #   # ports:
-  #   #   - "127.0.0.1:9119:9119"
-  #   volumes: *agent-volumes
-  #   environment:
-  #     - GATEWAY_HEALTH_URL=http://hermes:8642
-  #   depends_on:
-  #     - hermes
+  dashboard:
+    <<: *default-service
+    container_name: dashboard
+    command: dashboard --host 0.0.0.0 --insecure
+    ports:
+      - "127.0.0.1:9119:9119"
+    volumes: *agent-volumes
+    environment:
+      - GATEWAY_HEALTH_URL=http://hermes:8642
+    depends_on:
+      - hermes
 
   open-webui:   # https://hermes-agent.nousresearch.com/docs/user-guide/messaging/open-webui#docker-compose-setup
     <<: *default-service

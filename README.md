@@ -26,6 +26,7 @@ $ docker compose exec hermes hermes profile list
 - **Per-profile `.env` injection** — `API_SERVER_PORT`, `API_SERVER_KEY`, and any extra vars are merged into each profile's `.env` on every start
 - **Auto-restarting gateways** — each active profile's gateway restarts automatically (5 s back-off) if it crashes
 - **Open WebUI ready** — every agent appears as a distinct model in [Open WebUI](https://github.com/open-webui/open-webui), selectable from the model dropdown
+- **Built-in Hermes Dashboard** — a dedicated `dashboard` service exposes the Hermes Dashboard at `http://localhost:9119` for real-time gateway health and monitoring
 
 ---
 
@@ -77,6 +78,8 @@ graph TD
 - [Docker](https://docs.docker.com/get-docker/) with Compose v2
 - At least one LLM provider API key (Anthropic, OpenAI, DeepSeek, …)
 
+> **Tested version:** `v2026.4.30` (more versions will be validated in the future).
+
 ### 1 — Clone the repository
 
 ```bash
@@ -110,6 +113,48 @@ docker compose up -d
 ```
 
 Open WebUI will be available at **http://localhost:3000**.
+
+---
+
+## Just commands
+
+A [`justfile`](https://github.com/casey/just) is provided for common operational tasks.
+
+### Install Just
+
+```bash
+# macOS
+brew install just
+
+# Ubuntu / Debian
+sudo apt-get install just
+
+# Arch
+sudo pacman -S just
+
+# Or via Cargo
+cargo install just
+```
+
+> Full installation options: https://github.com/casey/just#installation
+
+### Available commands
+
+```bash
+# Open an interactive shell inside the hermes container (auto-activates venv)
+just profile
+
+# Run a Hermes profile sub-command (e.g. list, create, delete)
+just profile list
+just profile create my-new-agent
+
+# Tail hermes service logs (default: last 50 lines)
+just logs
+just logs 100
+
+# Restart the hermes service
+just restart
+```
 
 ---
 
